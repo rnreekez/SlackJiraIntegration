@@ -2,7 +2,7 @@ Jira Transitions for Slack
 ==========================
 This is a small nodejs+restify server that receives Jira webhooks and dispatches them to Slack. It supports multiple projects/rooms and is easy to setup on Heroku.
 
-## How to install on heroku
+## Installing on Heroku
 Simply clone the repository and push it to heroku, we have included a Procfile for a two command setup:
 
     cd <repository folder>
@@ -26,7 +26,7 @@ On Slack, you must create a new incoming webhook for each project you want to re
   4. (Optional) Change the name for the sender in the "Integration Settings" section. Otherwise it will show up as "incoming-webhook"
   5. (Optional) Update the icon for the sender also in the "Integration Settings" section. For your convenience, you can download a Jira icon from here: http://i.imgur.com/1MtFW8I.png
 
-## Configure using environment variables
+## Configuring using environment variables
 You can set up each new project by using two enviroment variables:
 
     <Jira project key>:JIRA_DOMAIN=<mycompany>.atlassian.net
@@ -37,9 +37,9 @@ For settings this up on heroku for a given "MP" project key, you would do:
     heroku config:set MP:JIRA_DOMAIN=mycompany.atlassian.net
     heroku config:set MP:JIRA_DOMAIN=https://mycompany.slack.com/services/hooks/incoming-webhook?token=zAHRtMv6BN2EDFx2nx4ZhMYr
 
-For new projects just repeat the steps above.
+For new projects just repeat the steps above. Note the JIRA_DOMAIN can point to custom Jira instalations too, not just OnDemand ones.
 
-## Configure using a JSON config file
+## Configuring using a JSON config file
 You can also use a `secret.config.json` on the project if you don't like the enviroment variable approach. If you are deploy this over a git hook (like on Heroku) you must add it in a commit before pushing.
 
 It uses the same format as the enviroment variable:
