@@ -1,5 +1,5 @@
 var restify = require('restify');
-var _ = require('underscore');
+var _ = require('lodash');
 
 var logError = console.error;
 console.error = function () {
@@ -38,9 +38,20 @@ var port = process.env.PORT || 3000,
 
 server.use(restify.gzipResponse());
 server.use(restify.queryParser());
-server.use(restify.bodyParser({
-    maxBodySize: 0
-}));
+
+// Jira sends a newline in the middle of a string in the body, so we need to deal with that.
+server.use(function(req, res, next){
+  var data = "";
+  req.on('data', function(chunk){ data += chunk});
+  req.on('end', function(){
+    req.rawBody = data;
+    next();
+  })
+});
+server.use(function(req, res, next){
+  req.body = JSON.parse(req.rawBody.replace('\n', ''));
+  next();
+});
 
 server.on('uncaughtException', function (req, res, route, error) {
     /* jshint -W109 */

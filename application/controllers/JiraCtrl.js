@@ -8,7 +8,18 @@ exports.receiveEvent = function (req, res) {
     var endpoint, body, transition, shortMessage, configProps, projectKey,
         ev = req.body;
 
-    if (_.has(ev, 'transition')) {
+    var hasTransition = _.has(ev, 'transition');
+
+    if(!hasTransition && _.has(ev, 'changelog')) { // Newer jira versions
+      _.each(ev.changelog.items, function(change){
+        if(change.field == 'status' && change.fromString) {
+          ev.transition = { from_status: change.fromString,  transitionName: change.toString }
+          hasTransition = true;
+        }
+      });
+    }
+
+    if (hasTransition) {
         projectKey = ev.issue.key.split('-')[0];
 
         configProps = {
