@@ -1,7 +1,6 @@
 var restify = require('restify');
+var _ = require('underscore');
 
-var configFile = process.argv[2] ? process.argv[2] : './secret.config.json';
-console.log('Config file: ' + configFile);
 var logError = console.error;
 console.error = function () {
     var args = Array.prototype.slice.call(arguments);
@@ -12,7 +11,23 @@ console.error = function () {
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
-require('nconf').use('file', { file: configFile }).argv();
+// We are looking for any config environment variable that matches our format
+var shouldUseEnvForConfig = false;
+_.filter(Object.keys(process.env), function(env_key){
+  if(/[A-Z]{2,10}:SLACK_URL/i.test(env_key)){
+    shouldUseEnvForConfig = true;
+    return false; // break
+  }
+});
+
+if(shouldUseEnvForConfig) {
+  require('nconf').use('env');
+  console.log('Using ENV variables for configuration.')
+} else {
+  var configFile = process.argv[2] ? process.argv[2] : './secret.config.json';
+  console.log('Using config file: ' + configFile);
+  require('nconf').use('file', { file: configFile }).argv();
+}
 
 var port = 3000,
     jira = require('./controllers/JiraCtrl'),

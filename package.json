@@ -20,7 +20,8 @@
     "lodash": "^2.4.1",
     "nconf": "^0.6.9",
     "rest": "^1.1.1",
-    "restify": "^2.8.2"
+    "restify": "^2.8.2",
+    "underscore": "^1.7.0"
   },
   "devDependencies": {
     "chai": "^1.9.1",
