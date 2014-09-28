@@ -29,7 +29,7 @@ if(shouldUseEnvForConfig) {
   require('nconf').use('file', { file: configFile }).argv();
 }
 
-var port = 3000,
+var port = process.env.PORT || 3000,
     jira = require('./controllers/JiraCtrl'),
     server = restify.createServer({
         name: 'SlackIntegration API'
