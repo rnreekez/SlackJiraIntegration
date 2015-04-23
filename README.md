@@ -15,7 +15,8 @@ Webhooks on Jira works globaly. You most likely will want to setup this on a per
  1. Go to Administration > Advanced > Webhooks
  2. Click on "Create a Webhook" over the top-left corner of the screen
  3. Select the "Issue Update" event
- 4. (Optional) Add a JQL for your project like `project = "My Project"`
+ 4. Insert your application URL. The receiving endpoint is at `/api/jira`, so if your application is being served from `my-domain.com` it would look like `http://my-domain.com/api/jira`.
+ 5. (Optional) Add a JQL for your project like `project = "My Project"`
 
 ## Creating a new Incoming Hook on Slack
 On Slack, you must create a new incoming webhook for each project you want to receive these notifications.
