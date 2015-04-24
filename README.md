@@ -2,6 +2,12 @@ Jira Transitions for Slack
 ==========================
 This is a small nodejs+restify server that receives Jira webhooks and dispatches them to Slack. It supports multiple projects/rooms and is easy to setup on Heroku.
 
+The events dispatched to slack are these:
+
+* New issue created
+* Issue transitioned to another state
+* Comment added or modified
+
 ## Installing on Heroku
 Simply clone the repository and push it to heroku, we have included a Procfile for a two command setup:
 
@@ -10,11 +16,11 @@ Simply clone the repository and push it to heroku, we have included a Procfile f
     git push heroku master
 
 ## Creating a new Outgoing Hook on Jira
-Webhooks on Jira works globaly. You most likely will want to setup this on a per-project basis if your Jira activity is pretty high to avoid, otherwise you can add a single webhook for all your projects.
+Webhooks on Jira works globaly. You most likely will want to setup this on a per-project basis if your Jira activity is too high, otherwise you can add a single webhook for all your projects.
 
  1. Go to Administration > Advanced > Webhooks
  2. Click on "Create a Webhook" over the top-left corner of the screen
- 3. Select the "Issue Update" event
+ 3. Select the "Issue Update" and "Issue Created" events
  4. Insert your application URL. The receiving endpoint is at `/api/jira`, so if your application is being served from `my-domain.com` it would look like `http://my-domain.com/api/jira`.
  5. (Optional) Add a JQL for your project like `project = "My Project"`
 
