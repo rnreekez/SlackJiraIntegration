@@ -34,6 +34,61 @@ exports.receiveEvent = function (req, res) {
   if(_.has(ev, 'issue'))
     var issueUrl = 'https://' + config.get(configProps.jiraDomain) + '/browse/' + ev.issue.key;
 
+  if (_.has(ev, 'webhookEvent') && ev.webhookEvent == 'jira:issue_created') {
+    /* jshint camelcase:false */
+    transition = {
+      issue: ev.issue.key,
+      issueUrl: issueUrl,
+      description: ev.issue.fields.summary,
+      who: ev.user.displayName
+    };
+
+    transition.assignee = (ev.issue.fields.assignee) ?
+        ev.issue.fields.assignee.displayName : 'Unassigned';
+
+    shortMessage = _.template(
+        ':zap: *<%= t.who %>* created <<%= t.issueUrl %>|<%= t.issue %>>',
+        { t: transition }
+    );
+
+    body = {
+      attachments: [
+        {
+          "mrkdwn_in": ["pretext", "fallback"],
+          fallback: shortMessage,
+          pretext: shortMessage,
+          color: '#C0C0C0',
+          fields: [
+            {
+              title: 'Current Assignee',
+              value: _.template(
+                  '<%= t.assignee %>',
+                  { t: transition }
+              ),
+              short: true
+            },
+            {
+              title: 'Summary',
+              value: _.template(
+                  '<%= t.description %>',
+                  { t: transition }
+              ),
+              short: false
+            }
+          ]
+        }
+      ]
+    };
+
+    client({
+      path: endpoint,
+      entity: body
+    }).then(function (response) {
+      console.log('POST -- ' + endpoint);
+      console.log(response.status);
+    });
+  }
+
   if (hasTransition) {
     /* jshint camelcase:false */
     transition = {
