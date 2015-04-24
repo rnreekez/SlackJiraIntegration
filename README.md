@@ -1,5 +1,5 @@
-Jira Notification for Slack
-==========================
+Jira Notifications for Slack
+============================
 This is a small nodejs+restify server that receives Jira webhooks and dispatches them to Slack. It supports multiple projects/rooms and is easy to setup on Heroku.
 
 The events dispatched to slack are these:
