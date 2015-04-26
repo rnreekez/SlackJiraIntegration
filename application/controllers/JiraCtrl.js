@@ -40,14 +40,29 @@ exports.receiveEvent = function (req, res) {
       issue: ev.issue.key,
       issueUrl: issueUrl,
       description: ev.issue.fields.summary,
-      who: ev.user.displayName
+      who: ev.user.displayName,
+      priority: ev.issue.fields.priority.name,
+      icon: ''
     };
 
     transition.assignee = (ev.issue.fields.assignee) ?
         ev.issue.fields.assignee.displayName : 'Unassigned';
 
+    var issueTypes = {
+      'Task': ':memo:',
+      'New Feature': ':sparkles:',
+      'Bug': ':boom:',
+      'Improvement': ':wrench:',
+      'Epic': ':book:',
+      'Story': ':bulb:'
+    };
+
+    if(typeof issueTypes[ev.issue.fields.issuetype.name] !== 'undefined') {
+      transition.icon = issueTypes[ev.issue.fields.issuetype.name] + ' ';
+    }
+
     shortMessage = _.template(
-        ':zap: *<%= t.who %>* created <<%= t.issueUrl %>|<%= t.issue %>>',
+        '<%= t.icon %>*<%= t.who %>* created <<%= t.issueUrl %>|<%= t.issue %>>',
         { t: transition }
     );
 
@@ -57,12 +72,20 @@ exports.receiveEvent = function (req, res) {
           "mrkdwn_in": ["pretext", "fallback"],
           fallback: shortMessage,
           pretext: shortMessage,
-          color: '#C0C0C0',
+          color: '#42B854',
           fields: [
             {
               title: 'Current Assignee',
               value: _.template(
                   '<%= t.assignee %>',
+                  { t: transition }
+              ),
+              short: true
+            },
+            {
+              title: 'Priority',
+              value: _.template(
+                  '<%= t.priority %>',
                   { t: transition }
               ),
               short: true
@@ -162,7 +185,7 @@ exports.receiveEvent = function (req, res) {
     var commentUrl = issueUrl + '?focusedCommentId=' + ev.comment.id + '&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-' + ev.comment.id;
 
     var shortMessage = _.template(
-        '*<%= c.author.displayName %>* <<%= commentUrl %>|<%= action %>> on issue <<%= issueUrl %>|<%= t.issue.id%> - <%= issueSummary %>>',
+        '*<%= c.author.displayName %>* <<%= commentUrl %>|<%= action %>> on issue <<%= issueUrl %>|#<%= t.issue.key %> - <%= issueSummary %>>',
         { c: ev.comment, t: ev, issueUrl: issueUrl, action: action, commentUrl: commentUrl,
           issueSummary: ev.issue.fields.summary.replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;')
         }
