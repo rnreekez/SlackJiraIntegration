@@ -35,6 +35,10 @@ exports.receiveEvent = function (req, res) {
     var issueUrl = 'https://' + config.get(configProps.jiraDomain) + '/browse/' + ev.issue.key;
 
   if (_.has(ev, 'webhookEvent') && ev.webhookEvent == 'jira:issue_created') {
+    var fixVersions = _.map(ev.issue.fields.fixVersions, function(v){ return v.name }).join(', ');
+    var components = _.map(ev.issue.fields.components, function(v){ return v.name }).join(', ');
+
+
     /* jshint camelcase:false */
     transition = {
       issue: ev.issue.key,
@@ -42,7 +46,9 @@ exports.receiveEvent = function (req, res) {
       description: ev.issue.fields.summary,
       who: ev.user.displayName,
       priority: ev.issue.fields.priority.name,
-      icon: ''
+      icon: '',
+      fixVersion: fixVersions != '' ? fixVersions : 'Not set',
+      components: components != '' ? components : 'Not set'
     };
 
     transition.assignee = (ev.issue.fields.assignee) ?
@@ -86,6 +92,22 @@ exports.receiveEvent = function (req, res) {
               title: 'Priority',
               value: _.template(
                   '<%= t.priority %>',
+                  { t: transition }
+              ),
+              short: true
+            },
+            {
+              title: 'Fix Version',
+              value: _.template(
+                  '<%= t.fixVersion %>',
+                  { t: transition }
+              ),
+              short: true
+            },
+            {
+              title: 'Components',
+              value: _.template(
+                  '<%= t.components %>',
                   { t: transition }
               ),
               short: true
