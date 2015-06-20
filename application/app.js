@@ -1,7 +1,6 @@
 var restify = require('restify');
+var _ = require('lodash');
 
-var configFile = process.argv[2] ? process.argv[2] : './secret.config.json';
-console.log('Config file: ' + configFile);
 var logError = console.error;
 console.error = function () {
     var args = Array.prototype.slice.call(arguments);
@@ -12,9 +11,25 @@ console.error = function () {
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
-require('nconf').use('file', { file: configFile }).argv();
+// We are looking for any config environment variable that matches our format
+var shouldUseEnvForConfig = false;
+_.filter(Object.keys(process.env), function(env_key){
+  if(/[A-Z]{2,10}:SLACK_URL/i.test(env_key)){
+    shouldUseEnvForConfig = true;
+    return false; // break
+  }
+});
 
-var port = 3000,
+if(shouldUseEnvForConfig) {
+  require('nconf').use('env');
+  console.log('Using ENV variables for configuration.')
+} else {
+  var configFile = process.argv[2] ? process.argv[2] : './secret.config.json';
+  console.log('Using config file: ' + configFile);
+  require('nconf').use('file', { file: configFile }).argv();
+}
+
+var port = process.env.PORT || 3000,
     jira = require('./controllers/JiraCtrl'),
     server = restify.createServer({
         name: 'SlackIntegration API'
@@ -23,9 +38,20 @@ var port = 3000,
 
 server.use(restify.gzipResponse());
 server.use(restify.queryParser());
-server.use(restify.bodyParser({
-    maxBodySize: 0
-}));
+
+// Jira sends a newline in the middle of a string in the body, so we need to deal with that.
+server.use(function(req, res, next){
+  var data = "";
+  req.on('data', function(chunk){ data += chunk});
+  req.on('end', function(){
+    req.rawBody = data;
+    next();
+  })
+});
+server.use(function(req, res, next){
+  req.body = JSON.parse(req.rawBody.replace('\n', ''));
+  next();
+});
 
 server.on('uncaughtException', function (req, res, route, error) {
     /* jshint -W109 */
